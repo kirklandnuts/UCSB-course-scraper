@@ -84,6 +84,7 @@ print(elems[0].attrs)
 """
 
 # Extract paragraph elements
+# HOLY FUCK IT WORKS
 pElems = exampleSoup.select('p')
 for i in range(0, 11):
 	print(pElems[i])
@@ -95,6 +96,11 @@ print(str(h2Elem))
 print(h2Elem.get('id'))
 print(h2Elem.get('some_nonexistent_addr') == None)
 print(h2Elem.attrs)
+
+# Now show a whole bunch of h2 tags
+for i in range(0, 5):
+	print(h2Elem[i])
+	h2Elem[i].getText()
 
 
 
