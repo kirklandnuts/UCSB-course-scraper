@@ -19,7 +19,6 @@ headers = {
 headers = {
   "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-  
 }
 
 # we group the form fields and their values in a list (any
@@ -76,9 +75,12 @@ f = urllib2.urlopen(req)
 """  
 
 
-req = sesh.post(url, data = formData)
+# req = sesh.post(url, data = formData)
 # text = sesh.get() 
-print(type(req)) 
+sesh2 = requests.Session()
+req2 = sesh2.post(url, data = formData2)
+print(type(req2))
+print(sesh2.cookies.get_dict()) 
 
 class_info = bs4.BeautifulSoup(req.text, "html.parser")
 print(type(class_info))
