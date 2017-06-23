@@ -17,7 +17,7 @@ quarters = {"winter": 1,
             "summer": 3,
             "fall": 4}
 
-# First get sesson info
+# First get session info
 def get_session_info():
 
   # Entered in User-Agent 
