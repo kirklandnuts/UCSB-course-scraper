@@ -1,7 +1,7 @@
 # This code is taken from
 # http://stackoverflow.com/questions/1480356/how-to-submit-query-to-aspx-page-in-python
 # Import various libraries
-import urllib, bs4, requests, sys
+import urllib, bs4, requests, sys, re
 
 # Define URL (stupidass .aspx link)
 url = "https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx"
@@ -9,7 +9,9 @@ url = "https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx"
 # Define class types to run this with
 subjects = ["PSTAT",
             "MATH",
-            "CMPSC"]
+            "CMPSC",
+            "ECON",
+            "ENGR"]
 
 # Define quarters and corresponding numbers with it
 quarters = {"winter": 1,
@@ -48,27 +50,6 @@ def get_session_info():
   COOKIE = keyzNCookies["ASP.NET_SessionId"]
 
   get_class_lists(VIEWSTATE, VIEWSTATEGENERATOR, EVENTVALIDATION, COOKIE, sesh)
-
-"""
-formData = (
-   # Here are the fields of interest
-   # Classes, quarter, course levels
-
-   ("__VIEWSTATE", VIEWSTATE),
-   ("__VIEWSTATEGENERATOR", VIEWSTATEGENERATOR),
-   ("__EVENTVALIDATION", EVENTVALIDATION),
-   #("__ASP.NET_SessionId", ),
-   ('ctl00$pageContent$courseList', 'PSTAT'),
-   #(r'ctl00$pageContent$courseList', 'MATH')
-   #(r'ctl00$pageContent$courseList', 'CMPSC')
-    # Pick out the subjects we want to take
-   ('ctl00$pageContent$quarterList', 20174), # Represents 2017 and "fourth" quarter of year
-   ('ctl00$pageContent$dropDownCourseLevels', 'Undergraduate'), # Undergrad classes
-   ('ctl00$pageContent$searchButton.x', 24),
-   ('ctl00$pageContent$searchButton.y', 7),
-)
-"""
-
 
 def get_class_lists(VIEWSTATE, VIEWSTATEGENERATOR, EVENTVALIDATION, COOKIE, session):
 
@@ -114,6 +95,7 @@ def get_class_lists(VIEWSTATE, VIEWSTATEGENERATOR, EVENTVALIDATION, COOKIE, sess
       print("Year does not appear to be the correct length. Please re-enter the number with the correct length")
   
   # Now take number and concatenate that shit due to formatting of input
+  # In order to input the year and quarter into the request
   fullString = year + str(number)
   fullNumber = int(fullString)
 
@@ -148,4 +130,74 @@ def get_class_lists(VIEWSTATE, VIEWSTATEGENERATOR, EVENTVALIDATION, COOKIE, sess
         finalFile.write(prettyHTML)
 
 
+def parse_html():
+  # Parse the new HTML files
+  # First make a regular expression object
+  #pattern = re.compile("ctl00_pageContent_repeaterSearchResults_ctl1**_labelTitle$")
+  # This is what a section looks like
+  """
+  <td style="text-align: left; vertical-align: middle;">
+  </td>
+  <td style="text-align: left; vertical-align: middle;">
+    T
+  </td>
+  <td style="text-align: left; vertical-align: top; white-space: nowrap; padding-left: 5px;
+                        padding-right: 5px;">
+   8:00 am - 8:50 am
+  </td>
+  <td style="text-align: left; vertical-align: middle;">
+   PHELP2532
+  </td>
+  <td style="text-align: right; vertical-align: middle;">
+   0 / 25
+  </td>
+  <td class="Section" style="color: transparent;">
+   False
+  </td>
+  """
+  # And this is what the actual class looks like:
+  """
+  <td style="text-align: left; vertical-align: middle;">
+   BIGELOW S J
+   <br/>
+  </td>
+  <td style="text-align: left; vertical-align: middle;">
+   M W F
+  </td>
+  <td style="text-align: left; vertical-align: top; white-space: nowrap; padding-left: 5px;
+                    padding-right: 5px;">
+   9:00 am - 9:50 am
+  </td>
+  <td style="text-align: left; vertical-align: middle;">
+   IV   THEA1
+  </td>
+  <td style="text-align: right; vertical-align: middle;">
+   0 / 75
+  </td>
+  <td class="Section" style="color: transparent;">
+   True
+  </td>
+  """
+
+  for subject in subjects:
+    classInfo = []
+    with open("{}.html".format(subject), "rb") as htmlFile:
+      soup = bs4.BeautifulSoup(htmlFile, "html.parser")
+      classes = soup.find_all("td", attrs = {"class": "CourseInfoRow"})
+      #strings = list(classes.stripped_strings)
+      """
+      # The above line creates a 'bs4.element.ResultSet' element
+      # Need to loop through this through this method
+      for shit in soup:
+        #class_list.extend(shit.find_all("span", {"id": re.compile(".*_labelTitle$")}))
+
+        classInfo.extend(soup.find_all("span", {"id": re.compile(".*HyperLinkPrimaryCourse")}))
+        classInfo.extend(soup.find_all("td", {"style": "vertical-align: middle;"}))
+        classInfo.extend(soup.find_all("td", {"style": "text-align: left; vertical-align: top;\
+        white-space: nowrap; padding-left: 5px; padding-right: 5px;"}))
+      """
+      #print(classInfo)
+
+
 get_session_info() 
+parse_html()
