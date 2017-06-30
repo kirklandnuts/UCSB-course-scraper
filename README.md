@@ -3,14 +3,14 @@ Web scraper for aggregating information on a list of designated UCSB classes.
 
 ## TABLE OF CONTENTS
 
-* [Abstract](##Abstract)
+* [Abstract](#Abstract)
 * [Additional Resources](##Additional-Resources)
 * [Dependencies Required](##Dependencies-Required)
 * [Virtual Environments (optional)](##Virtual-Environments)
 * [Steps Required](##Steps-Required)
 * [Making the Website Request](##Website-Requests)
 
-## Abstract
+## ABSTRACT
 The goal is to go from [this](https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx):
 ![](step1.png)
 to this:
