@@ -12,6 +12,7 @@ Web scraper for aggregating information on a list of designated UCSB classes.
 
 ## Abstract
 The goal is to go from [this](https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx):
+![](images/step1.png)
 to this:
 ![](images/step2.png)
 to populate a spreadsheet like this:
