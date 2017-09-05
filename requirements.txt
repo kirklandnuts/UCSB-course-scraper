@@ -3,6 +3,5 @@ beautifulsoup4==4.5.3
 packaging==16.8
 pyparsing==2.2.0
 pyperclip==1.5.27
-regex==2017.4.29
 requests==2.13.0
 six==1.10.0
