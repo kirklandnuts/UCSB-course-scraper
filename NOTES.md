@@ -12,11 +12,10 @@ Web scraper for aggregating information on a list of designated UCSB classes.
 
 ## Abstract
 The goal is to go from [this](https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx):
-![](step1.png)
 to this:
-![](step2.png)
+![](images/step2.png)
 to populate a spreadsheet like this:
-![](goal.png)
+![](images/goal.png)
 
 Making requests to an .aspx page is difficult, as the hyperlink does not change after one puts in the desired parameters. A different approach is instead to make a request onto the server. At first, it did not matter what parameters we put in; the same html file would keep getting outputted with no parameters selected. With an assist from our club president Jason Freeberg, we figured our we needed a cookie in order to save the parameters and actually execute the different requests.
 
