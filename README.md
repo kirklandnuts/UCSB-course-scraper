@@ -47,14 +47,6 @@ CMPSC courses for FALL 2017 outputted to ./CMPSC-FALL2017.csv
 ```
 
 
-## Goal
-The goal is to go from [this](https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx):
-![](images/step1.png)
-to this:
-![](images/step2.png)
-to populate a spreadsheet like this:
-![](images/goal.png)
-
 # To-do
 - integrate with google drive
 - generalize to all departments
