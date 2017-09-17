@@ -112,10 +112,10 @@ def get_dept(subject, quarter, year, session_info):
 
     # Here we enter the fields of interest and necessary states
     # Classes, quarter, course levels
-    formData = {b"__VIEWSTATE": sesh['VIEWSTATE'],
-            b"__VIEWSTATEGENERATOR": sesh['VIEWSTATEGENERATOR'],
-            b"__EVENTVALIDATION": sesh['EVENTVALIDATION'],
-            b"__ASP.NET_SessionId": sesh['COOKIE'],
+    formData = {b"__VIEWSTATE": session_info['VIEWSTATE'],
+            b"__VIEWSTATEGENERATOR": session_info['VIEWSTATEGENERATOR'],
+            b"__EVENTVALIDATION": session_info['EVENTVALIDATION'],
+            b"__ASP.NET_SessionId": session_info['COOKIE'],
             b"ctl00$pageContent$courseList": subject,
             b"ctl00$pageContent$quarterList": full_number, # Represents 2017 and "fourth" quarter of year
             b"ctl00$pageContent$dropDownCourseLevels": "Undergraduate", # Undergrad classes
@@ -185,7 +185,7 @@ def output_to_worksheet(dept, sheet):
     nrows = len(courses) + 1
     ncols = len(colnames)
     worksheet = sheet.add_worksheet(title=dept['subject'], rows=nrows, cols=ncols)
-    print("Creating worksheet for", dept['subject'], dept['quarter'], dept['year'])
+    print("Creating worksheet for", dept['subject'])
     # output headers
     for i in trange(nrows, unit = 'row'):
         if i == 0:
