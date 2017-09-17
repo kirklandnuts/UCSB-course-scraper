@@ -6,6 +6,9 @@ import requests
 import argparse
 import os
 import csv
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from tqdm import trange
 
 # Define URL
 URL = "https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx"
@@ -26,14 +29,15 @@ QUARTERS = {"WINTER": 1,
 # FUNCTIONS
 # ======================
 def get_session_info():
-    '''
-    this function makes aspx requests and returns the html response
-        :param subject: one of "PSTAT", "MATH", or "CMPSC" (not case-sensitive)
-        :param quarter: one of "SPRING", "SUMMER", "FALL", or "WINTER" (not case-sensitive)
-        :param year: year of interest
-        :param session_info: a dictionary containing session info required to make aspx request
-        :return: html response from aspx request with arguments as query parameters
-    '''
+    """
+    this function sends an initial response to the url to get session info
+
+    Keyword args:
+        none
+
+    Return:
+        a dictionary; contains session info required to make aspx request
+    """
 
     headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
@@ -61,29 +65,57 @@ def get_session_info():
     return session_info
 
 
-def get_class_html(subject, quarter, year, session_info):
-    '''
+def get_dept(subject, quarter, year, session_info):
+    """
     this function makes aspx requests and returns the html response
-        :param subject: one of "PSTAT", "MATH", or "CMPSC" (not case-sensitive)
-        :param quarter: one of "SPRING", "SUMMER", "FALL", or "WINTER" (not case-sensitive)
-        :param year: year of interest
-        :param session_info: a dictionary containing session info required to make aspx request
-        :return: html response from aspx request with arguments as query parameters
-    '''
+
+    Keyword args:
+    subject -- a string; one of "PSTAT", "MATH", or "CMPSC" (not case-sensitive)
+    quarter -- a string; one of "SPRING", "SUMMER", "FALL", or "WINTER" (not case-sensitive)
+    year -- an int; year of interest
+    session_info -- a dict; contains session info required to make aspx request
+
+    return:
+    a dictionary; contains all courses as list of dicts along with metadata (structure below)
+    {
+    'quarter':'FALL',
+    'year':2016,
+    'courses':
+        [
+            {
+            'course_code':
+            'course_title':
+            'time':
+            'location':
+            'professor':
+            'course_size':
+            'days':
+            },
+            {
+            'course_code':
+            'course_title':
+            'time':
+            'location':
+            'professor':
+            'course_size':
+            'days':
+            },
+            ...
+        ]
+    }
+    """
     # aspx form takes year and quarter in the form of a 5 digit integer
     #   the first 4 digits represent the year and the last digit represents the quarter
     #   1: winter, 2: spring, 3: summer, 4: fall
     # here, we convert accordingly
     full_number = int(str(year) + str(QUARTERS[quarter]))
 
-    session_info = get_session_info()
-
     # Here we enter the fields of interest and necessary states
     # Classes, quarter, course levels
-    formData = {b"__VIEWSTATE": session_info['VIEWSTATE'],
-            b"__VIEWSTATEGENERATOR": session_info['VIEWSTATEGENERATOR'],
-            b"__EVENTVALIDATION": session_info['EVENTVALIDATION'],
-            b"__ASP.NET_SessionId": session_info['COOKIE'],
+    formData = {b"__VIEWSTATE": sesh['VIEWSTATE'],
+            b"__VIEWSTATEGENERATOR": sesh['VIEWSTATEGENERATOR'],
+            b"__EVENTVALIDATION": sesh['EVENTVALIDATION'],
+            b"__ASP.NET_SessionId": sesh['COOKIE'],
             b"ctl00$pageContent$courseList": subject,
             b"ctl00$pageContent$quarterList": full_number, # Represents 2017 and "fourth" quarter of year
             b"ctl00$pageContent$dropDownCourseLevels": "Undergraduate", # Undergrad classes
@@ -94,59 +126,125 @@ def get_class_html(subject, quarter, year, session_info):
     session = session_info['SESSION']
     req2 = session.post(URL, data = formData)
 
-    return req2
-
-
-def output_to_csv(dept_courses, output_name):
-    f = open(output_name, 'w')
-    w = csv.DictWriter(f, dept_courses[0].keys())
-    w.writeheader()
-    w.writerows(dept_courses)
-    f.close()
-
-
-# precondition: the argument is a list of stripped strings (which is returned by get_rows())
-# postcondition: the function returns a list of dicts, each dict containing all the elements of interest for each
-#   course in the list
-def extract_elements(row_list):
-    courses = []
-    for row in row_list:
-        n_days = len(row[-5])
-        if (n_days < 6) & (n_days > 1): # filtering out edge cases (canceled/special courses) as well as sections
-            course = {}
-            course['course_code'] = row[0]
-            course['course_title'] = row[3]
-            course['time'] = row[-4]
-            course['location'] = row[-3]
-            course['professor'] = row[-6]
-            course['course_size'] = row[-2]
-            course['days'] = row[-5]
-            courses.append(course)
-    return courses
-
-
-# precondition: the first argument is the html file to be parsed
-#   the second argument is a string representation of a dept to be passed into extract_elements
-# postcondition: the function returns a list of lists each representing a course contained within the department
-def get_rows(html_response):
-    soup = bs.BeautifulSoup(html_response, 'html.parser')
+    soup = bs.BeautifulSoup(req2.text, 'html.parser')
     row_html_list = soup.select('tr[class="CourseInfoRow"]')
-    row_list = []
+    courses = []
     for row_html in row_html_list:
         row = list(row_html.stripped_strings)
         if row[-1]:
-            row_list.append(row)
-    return(row_list)
+            n_days = len(row[-5])
+            if (n_days < 6) & (n_days > 1): # filtering out edge cases (canceled/special courses) as well as sections
+                course = {}
+                course['Code'] = row[0]
+                course['Title'] = row[3]
+                course['Time'] = row[-4]
+                course['Location'] = row[-3]
+                course['Professor'] = row[-6]
+                course['Size'] = row[-2]
+                course['Days'] = row[-5]
+                courses.append(course)
+
+    rdict = {
+    'subject':subject,
+    'quarter':quarter,
+    'year':year,
+    'courses':courses
+    }
+
+    return rdict
+
+
+def create_sheet(name):
+    scope = [
+        'https://spreadsheets.google.com/feeds',
+        'https://www.googleapis.com/auth/drive'
+    ]
+    creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+    client = gspread.authorize(creds)
+    sheet = client.create(name)
+    return sheet
+
+
+def output_to_csv(dept, output_dir):
+    subject = dept['subject']
+    courses = dept['courses']
+    filename = subject + '-' + dept['quarter'] + str(dept['year']) + '.csv'
+    filepath = os.path.join(output_dir, filename)
+    f = open(filepath, 'w')
+    w = csv.DictWriter(f, courses[0].keys())
+    w.writeheader()
+    w.writerows(courses)
+    f.close()
+    print(subject , 'courses for', dept['quarter'], str(dept['year']), 'outputted to', filepath)
+
+
+def output_to_worksheet(dept, sheet):
+    courses = dept['courses']
+    colnames = list(courses[1].keys())
+    colnames.append('Officer')
+    nrows = len(courses) + 1
+    ncols = len(colnames)
+    worksheet = sheet.add_worksheet(title=dept['subject'], rows=nrows, cols=ncols)
+    print("Creating worksheet for", dept['subject'], dept['quarter'], dept['year'])
+    # output headers
+    for i in trange(nrows, unit = 'row'):
+        if i == 0:
+            for j in range(ncols):
+                worksheet.update_cell(i+1, j+1, colnames[j])
+        else:
+            for j in range(ncols-1):
+                worksheet.update_cell(i+1, j+1, courses[i-1][colnames[j]])
 
 
 def courses_to_csv(quarter, year, session_info, output_dir):
+    """
+    writes course info to CSVs and outputs paths to files
+
+    Keyword arguments:
+    quarter -- a string; one of "SPRING", "SUMMER", "FALL", or "WINTER" (not case-sensitive)
+    year -- an int; year of interest
+    session_info -- a dict; contains session info required to make aspx request
+    output_dir -- a string; path to output directory
+
+    Return:
+    None; outputs path to files
+    """
     for subject in SUBJECTS:
-        html_resp = get_class_html(subject, quarter, year, session_info)
-        filename = subject + '-' + quarter + str(year) + '.csv'
-        filepath = os.path.join(output_dir, filename)
-        dept_dict = extract_elements(get_rows(html_resp.text))
-        output_to_csv(dept_dict, filepath)
-        print(subject , 'courses for', quarter, str(year), 'outputted to', filepath)
+        dept = get_dept(subject, quarter, year, session_info)
+        output_to_csv(dept, output_dir)
+
+
+def courses_to_gsheet(quarter, year, session_info):
+    """
+    writes course info to a google sheet and returns the link to the sheet
+
+    Keyword arguments:
+    quarter -- a string; one of "SPRING", "SUMMER", "FALL", or "WINTER" (not case-sensitive)
+    year -- an int; year of interest
+    session_info -- a dict; contains session info required to make aspx request
+
+    Return:
+    a string; link to sheet
+    """
+    sheet_name = quarter + ' ' + str(year) + ' Class Announcements'
+    print("Creating Google Sheet for", quarter, str(year))
+    sheet = create_sheet(sheet_name)
+    for subject in SUBJECTS:
+        dept = get_dept(subject, quarter, year, session_info)
+        output_to_worksheet(dept, sheet)
+    sheet.share('datascience.ucsb@gmail.com', perm_type='user', role='writer')
+    link = 'https://docs.google.com/spreadsheets/d/' + sheet.id
+    return link
+
+# for each dept
+    # create worksheet
+    # write dept course contents to worksheet
+        # update headers
+        # for each row
+            # update each column
+# sheet.share('datascience.ucsb@gmail.com', perm_type='user', role='writer')
+# return link to sheet
+
 
 # ======================
 # MAIN
@@ -154,9 +252,11 @@ def courses_to_csv(quarter, year, session_info, output_dir):
 if __name__ == '__main__':
     print('UCSB Data Science Course Info Scraper\nDeveloped by NATHAN FRITTER and TIMOTHY NGUYEN\n' + '='*50)
 
-    parser = argparse.ArgumentParser(description='Scrape UCSB\'s course listings and output data to CSV')
+    parser = argparse.ArgumentParser(description='Scrape UCSB\'s course listings and outputs to Google Sheets (default) or CSV')
     parser.add_argument('quarter')
     parser.add_argument('year')
+    parser.add_argument('-c', '--csv', default=False, action='store_true',
+                        help = 'output to csv instead of to Google Sheets')
     parser.add_argument('-o', '--output_directory', default='.',
                         help = 'manually designate output file')
 
@@ -166,4 +266,8 @@ if __name__ == '__main__':
     out_dir = args.output_directory
 
     sesh = get_session_info()
-    courses_to_csv(quarter, year, sesh, out_dir)
+    if args.csv:
+        courses_to_csv(quarter, year, sesh, out_dir)
+    else:
+        link = courses_to_gsheet(quarter, year, sesh)
+        print('Courses for', quarter, str(year), 'outputted to', link)
