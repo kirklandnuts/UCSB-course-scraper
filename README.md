@@ -30,11 +30,11 @@ UCSB Data Science Course Info Scraper
 Developed by NATHAN FRITTER and TIMOTHY NGUYEN
 ==================================================
 Creating Google Sheet for FALL 2017
-Creating worksheet for PSTAT FALL 2017
+Creating worksheet for PSTAT
 100%|██████████████████████████████████████████████████| 24/24 [01:04<00:00,  2.58s/row]
-Creating worksheet for MATH FALL 2017
+Creating worksheet for MATH
 100%|██████████████████████████████████████████████████| 56/56 [02:35<00:00,  3.14s/row]
-Creating worksheet for CMPSC FALL 2017
+Creating worksheet for CMPSC
 100%|██████████████████████████████████████████████████| 20/20 [00:56<00:00,  2.73s/row]
 Courses for FALL 2017 outputted to https://docs.google.com/spreadsheets/d/1WlijEnWp6KCYznXJn1goYPmVMUEUBiG878_Q7BvxaSo
 ```
