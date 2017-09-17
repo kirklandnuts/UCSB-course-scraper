@@ -10,6 +10,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from tqdm import trange
 
+
 # Define URL
 URL = "https://my.sa.ucsb.edu/public/curriculum/coursesearch.aspx"
 
@@ -64,7 +65,7 @@ def get_session_info():
 
     return session_info
 
-
+  
 def get_dept(subject, quarter, year, session_info):
     """
     this function makes aspx requests and returns the html response
@@ -125,7 +126,6 @@ def get_dept(subject, quarter, year, session_info):
 
     session = session_info['SESSION']
     req2 = session.post(URL, data = formData)
-
     soup = bs.BeautifulSoup(req2.text, 'html.parser')
     row_html_list = soup.select('tr[class="CourseInfoRow"]')
     courses = []
@@ -244,7 +244,6 @@ def courses_to_gsheet(quarter, year, session_info):
             # update each column
 # sheet.share('datascience.ucsb@gmail.com', perm_type='user', role='writer')
 # return link to sheet
-
 
 # ======================
 # MAIN

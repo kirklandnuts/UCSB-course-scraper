@@ -41,7 +41,7 @@ Courses for FALL 2017 outputted to https://docs.google.com/spreadsheets/d/1WlijE
 PLEASE NOTE: The Google Drive functionality will not work without the client secret (contact Timothy for it)
 
 
-The data can also be outputted to CSVs in designated output directory using the optional arguments `-c` and `-o`:
+The data can also be outputted to CSVs in a designated output directory using the optional arguments `-c` and `-o`:
 ```
 $ python UCSB-course-scraper.py fall 2017 -c -o ~/Documents/data-sci/class-announcements
 UCSB Data Science Course Info Scraper
@@ -54,6 +54,7 @@ CMPSC courses for FALL 2017 outputted to /Users/timmy/Documents/data-sci/class-a
 
 If no output directory is specified, the program will use the current working directory by default:
 ```
+
 $ python UCSB-course-scraper.py fall 2017 -c
 UCSB Data Science Course Info Scraper
 Developed by NATHAN FRITTER and TIMOTHY NGUYEN
@@ -65,5 +66,6 @@ CMPSC courses for FALL 2017 outputted to ./CMPSC-FALL2017.csv
 
 
 # To-do
+
 - implement google sheets api v4 (currently going through gspread which leverages gsheet api v3)
 - generalize to all departments
