@@ -1,4 +1,4 @@
-# Class Listings Scraper
+# UCSB Course Webscraper
 Web scraper for aggregating information on a list of designated UCSB classes.
 
 ## Usage
