@@ -26,7 +26,7 @@ After extracting the desired attributes, it would be very easy to put all of thi
 
 We wish to automate this process so that we can simply run a few python programs and then get the resulting Google Spreadsheet for us. So far the website calls and attribute extraction have been automated; now we just need to figure out how to translate it into a Google Spreadsheet (and a few other errors with attribute extraction).
 
-We will be updating this README as we progress more.
+
 
 ## Additional Resources
 
@@ -38,17 +38,22 @@ Other links we used to help with this project:
 + [Making Requests to .aspx Pages in Python](http://stackoverflow.com/questions/1480356/how-to-submit-query-to-aspx-page-in-python)
 + [Starting Sessions, Making Requests, Parsing Request Data](https://github.com/hgielar/GOLD-schedule-exporter/blob/master/GOLD_Schedule_Tracker.py) (this one was taken from code made by a fellow UCSB student Raleigh Littles III; thank you for your hard work.)
 + [Dealing with SSL Certificate Errors](http://stackoverflow.com/questions/42098126/mac-osx-python-ssl-sslerror-ssl-certificate-verify-failed-certificate-verify)
++ [Implementing Google sheet functionality with gspread](https://github.com/burnash/gspread)
+
 
 ## Dependencies Required
 
 Here are a list of all the packages we need for this project:
 
 ```
-urllib
 bs4
 requests
-sys
-re
+argparse
+os
+csv
+gspread
+oauth2client
+tqdm
 ```
 
 Python 3.5 and later is also required for this project.
